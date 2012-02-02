@@ -1,0 +1,35 @@
+I created this library for an Android project that had multiple Activities and required multiple data/Service providers. 
+The data/service systems I needed to implement included a Streaming Audio system with ability to control playback, A 
+Jabber Chat Client, Geo Location, Custom Ads, etc. Each Activity had a theme, but needed to be able to get data from any 
+number of providers. Because of this, and because the specs for this project changed quite frequently (requiring 
+Activities to be able to easily configured to connect to the provider one day, and then remove that functionality the 
+next), I chose to go with Android Services to fill the roll of the provider. 
+
+This was convenient because Services can be configured to stay in memory even if no Activity of the parent application 
+is open so it offered an excellent way to keep data from vanishing. The issue is that attaching to a service to send 
+messages to its message loop can be a messy MESSY thing, particularly when you have to have 5 Services bound. This makes
+it impossible to easily add or remove services from Activities. The solution was 3 custom base classes. Here are their
+stories: DUM DUM!
+
+
+IsisService.java: All long term and background parts of the application were implemented as Android Services. As the code
+between the Services became more complex and more similar, this class was made to simplify the Classes and make debugging 
+easier.
+
+IsisServiceWrapper.java: To ease getting and sending data to and from Services, the ServiceWrapper class was made. It 
+provides a thread and a message loop to handle messages and dispatch events sent from the service it’s derived classes 
+attach to without introducing the possibility of race conditions to the code.
+
+IsisActivity.java: Since the specification of the project was changing wildly, Activities would regularly need to 
+subscribe to new Services, or would no longer need one. Since every ServiceWrapper has a thread running, and therefore 
+needs to be manually terminated, it became easy to forget to release the newest ServiceWrapper added to the activity. 
+The IsisActivity class automatically finds all fields in it’s subclasses using reflection and calls the release method 
+on all Service Wrappers when the Activity is being destroyed by Android.
+
+
+This simple framework creates a thread for every Service, and a thread for every service wrapper. The result is that the 
+system can make quite a few Threads when changing between activities that bind to a large number of services, but Threads
+are quite cheap in the grand scheme of things and they are only really created on Activity change so it worked out. After
+I left the project I used the library for a few of my own projects, and now I thought I might as well make it open source
+in case someone else can use it.
+
