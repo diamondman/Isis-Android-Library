@@ -46,25 +46,33 @@ public class IsisActivity extends Activity {
 	 * destruction).
 	 */
 	private void releaseServices() {
-			try {
-				Class<? extends IsisActivity> c = this.getClass();
-				Field[] f = c.getDeclaredFields();
-				Method m = IsisServiceWrapper.class.getMethod("release", (Class[]) null);
+		try {
+			Class<? extends IsisActivity> c = this.getClass();
+			Field[] f = c.getDeclaredFields();
+			Method m = IsisServiceWrapper.class.getMethod("release", (Class[]) null);
 
-				for (int i = 0; i < f.length; i++) {
-					Class<?> c2 = f[i].getType();
-					if(IsisServiceWrapper.class.isAssignableFrom(c2)) {
-						Object o = null;
-						try {
-							o = f[i].get(this);
-							m.invoke(o, (Object[]) null);
-						} catch (Exception e) {
-							Log.e("Isis Resource Release", "Error Releasing Resources, likely the Activity is not a subClass of IsisActivity");
-						}
+			for (int i = 0; i < f.length; i++) {
+				Class<?> c2 = f[i].getType();
+				if (IsisServiceWrapper.class.isAssignableFrom(c2)) {
+					Object o = null;
+					try {
+						o = f[i].get(this);
+						m.invoke(o, (Object[]) null);
+					} catch (IllegalAccessException e) {
+						throw new RuntimeException("All IsisServiceWrapper sub classes used in IsisActivities must be public so they can be disposed of correctly! Class name: "
+								+ this.getClass().getName(), e);
+					} catch (NullPointerException e) {
+						Log.e("Isis Resource Release", "The resource was null. Recovering from error. Just keep it in mind for cleaning up code after testing.Class name: \"\n"
+								+ this.getClass().getName());
+					} catch (Exception e) {
+						Log.e("Isis Resource Release",
+								"Error Releasing Resources, most likely you manually called release on a ServiceWrapper and it can't be called twice. Figure out why this error " +
+								"is coming up because it could cause thread leaks! Class name: \"\n" + this.getClass().getName());
 					}
 				}
-			} catch (Exception e) {}
-		}
+			}
+		} catch (SecurityException e1) {} catch (NoSuchMethodException e1) {}
+	}
 
 	@Override
 	public void onDestroy() {

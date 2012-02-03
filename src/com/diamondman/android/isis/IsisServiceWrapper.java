@@ -176,7 +176,7 @@ public abstract class IsisServiceWrapper<T extends IsisService> {
 	 *            new Intent(context, ServiceClass.class)
 	 * @throws BindFailedException
 	 */
-	protected IsisServiceWrapper(Context context, Class<T> t) throws BindFailedException {
+	protected IsisServiceWrapper(Context context, Class<T> t) {
 		this.t = t;
 		this.context = context;
 		procThread = new WrapperThread();

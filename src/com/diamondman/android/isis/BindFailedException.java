@@ -1,7 +1,7 @@
 package com.diamondman.android.isis;
 
-@SuppressWarnings("serial")
-public class BindFailedException extends Exception {
+public class BindFailedException extends RuntimeException {
+	private static final long serialVersionUID = 6452614162540268401L;
 	public BindFailedException(String msg) {
 		super(msg);
 	}
